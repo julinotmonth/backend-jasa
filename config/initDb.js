@@ -1,4 +1,4 @@
-import { initDatabase, getDb, getOne, run } from './database.js';
+import { initDatabase, getOne, run } from './database.js';
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 
@@ -9,7 +9,6 @@ const init = async () => {
 
   try {
     await initDatabase();
-    const pool = getDb();
 
     // Create Users table
     await run(`
