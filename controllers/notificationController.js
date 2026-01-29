@@ -1,4 +1,4 @@
-import { getOne, getAll, run } from '../config/database.js';
+import { getOne, getAll, run } from '../config/database.js';  // Pastikan impor dari database.js benar
 
 // Get user's notifications
 export const getMyNotifications = async (req, res) => {

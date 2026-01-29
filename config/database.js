@@ -24,6 +24,16 @@ export const getOne = async (sql, params = []) => {
   }
 };
 
+export const getAll = async (sql, params = []) => {  // Menambahkan ekspor getAll
+  try {
+    const result = await pool.query(sql, params);
+    return result.rows;
+  } catch (error) {
+    console.error('Database getAll error:', error);
+    throw error;
+  }
+};
+
 export const run = async (sql, params = []) => {
   try {
     const result = await pool.query(sql, params);
