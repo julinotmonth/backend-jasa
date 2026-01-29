@@ -1,3 +1,4 @@
+// config/database.js
 import pg from 'pg';
 import dotenv from 'dotenv';
 
@@ -5,18 +6,34 @@ dotenv.config();
 
 const { Pool } = pg;
 
-// Gunakan connection string dari environment variables untuk cloud deployments
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL, // Gunakan DATABASE_URL dari Railway
-  ssl: {
-    rejectUnauthorized: false, // Pastikan SSL diaktifkan untuk koneksi ke cloud
-  },
-  max: 20, // Jumlah maksimum klien di pool
-  idleTimeoutMillis: 30000, // Tutup koneksi idle setelah 30 detik
-  connectionTimeoutMillis: 2000, // Timeout setelah 2 detik jika koneksi gagal
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
 });
 
-// Tes koneksi database
+export const getOne = async (sql, params = []) => {
+  try {
+    const result = await pool.query(sql, params);
+    return result.rows[0] || null;
+  } catch (error) {
+    console.error('Database getOne error:', error);
+    throw error;
+  }
+};
+
+export const run = async (sql, params = []) => {
+  try {
+    const result = await pool.query(sql, params);
+    return result;
+  } catch (error) {
+    console.error('Database run error:', error);
+    throw error;
+  }
+};
+
 export const initDatabase = async () => {
   try {
     const client = await pool.connect();
@@ -29,10 +46,9 @@ export const initDatabase = async () => {
   }
 };
 
-// Export fungsi lain seperti getDb, getOne, dll sesuai kebutuhan
-export const getDb = () => pool;
-
-export default { 
-  initDatabase, 
-  getDb 
+export const closeDatabase = async () => {
+  await pool.end();
+  console.log('Database pool closed');
 };
+
+export default pool;

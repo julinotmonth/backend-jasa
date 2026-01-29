@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { getOne, run } from '../config/database.js';
+import { getOne, run } from '../config/database.js'; // Pastikan impornya benar
 
 const generateToken = (userId) => {
   return jwt.sign(
