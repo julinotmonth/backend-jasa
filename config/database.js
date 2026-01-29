@@ -5,21 +5,18 @@ dotenv.config();
 
 const { Pool } = pg;
 
-// Create connection pool
+// Gunakan connection string dari environment variables untuk cloud deployments
 const pool = new Pool({
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT) || 5000,
-  database: process.env.DB_NAME || 'jasa_raharja_db',
-  user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || '',
-  // Alternative: use DATABASE_URL for cloud deployments
-  // connectionString: process.env.DATABASE_URL,
-  max: 20, // Maximum number of clients in the pool
-  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
-  connectionTimeoutMillis: 2000, // Return an error after 2 seconds if connection could not be established
+  connectionString: process.env.DATABASE_URL, // Gunakan DATABASE_URL dari Railway
+  ssl: {
+    rejectUnauthorized: false, // Pastikan SSL diaktifkan untuk koneksi ke cloud
+  },
+  max: 20, // Jumlah maksimum klien di pool
+  idleTimeoutMillis: 30000, // Tutup koneksi idle setelah 30 detik
+  connectionTimeoutMillis: 2000, // Timeout setelah 2 detik jika koneksi gagal
 });
 
-// Test database connection
+// Tes koneksi database
 export const initDatabase = async () => {
   try {
     const client = await pool.connect();
@@ -32,82 +29,10 @@ export const initDatabase = async () => {
   }
 };
 
-// Get pool instance
+// Export fungsi lain seperti getDb, getOne, dll sesuai kebutuhan
 export const getDb = () => pool;
-
-// Helper function to get single row
-export const getOne = async (sql, params = []) => {
-  try {
-    const result = await pool.query(sql, params);
-    return result.rows[0] || null;
-  } catch (error) {
-    console.error('Database getOne error:', error);
-    throw error;
-  }
-};
-
-// Helper function to get all rows
-export const getAll = async (sql, params = []) => {
-  try {
-    const result = await pool.query(sql, params);
-    return result.rows;
-  } catch (error) {
-    console.error('Database getAll error:', error);
-    throw error;
-  }
-};
-
-// Helper function to run a query (INSERT, UPDATE, DELETE)
-export const run = async (sql, params = []) => {
-  try {
-    const result = await pool.query(sql, params);
-    return result;
-  } catch (error) {
-    console.error('Database run error:', error);
-    throw error;
-  }
-};
-
-// Helper function to run query and return inserted/updated row
-export const runReturning = async (sql, params = []) => {
-  try {
-    const result = await pool.query(sql, params);
-    return result.rows[0] || null;
-  } catch (error) {
-    console.error('Database runReturning error:', error);
-    throw error;
-  }
-};
-
-// Transaction helper
-export const transaction = async (callback) => {
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN');
-    const result = await callback(client);
-    await client.query('COMMIT');
-    return result;
-  } catch (error) {
-    await client.query('ROLLBACK');
-    throw error;
-  } finally {
-    client.release();
-  }
-};
-
-// Graceful shutdown
-export const closeDatabase = async () => {
-  await pool.end();
-  console.log('Database pool closed');
-};
 
 export default { 
   initDatabase, 
-  getDb, 
-  getOne, 
-  getAll, 
-  run, 
-  runReturning, 
-  transaction,
-  closeDatabase 
+  getDb 
 };
